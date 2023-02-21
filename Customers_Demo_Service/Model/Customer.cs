@@ -1,6 +1,7 @@
 ﻿using Customers_Demo_Service.Data;
 using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -10,12 +11,13 @@ namespace Customers_Demo_Service.Model
     /// <summary>
     /// data model Customer
     /// </summary>
-    public class Customer
+    public class Customer : BaseModel
     {
+        [DisplayName("Customer ID")]
         public long CustomerID { get; set; }
         public decimal Score { get; set; } = 0;
 
-        public decimal UpdateScore()
+        public sealed override T Update<T>()
         {
             if (CustomerData.CustomerDatas.ContainsKey(this.CustomerID))
             {
@@ -25,8 +27,10 @@ namespace Customers_Demo_Service.Model
             {
                 CustomerData.CustomerDatas.TryAdd(this.CustomerID, this.Score);
             }
+            // enqueue
+            CustomerData.CustomerQueue.Append(this);
 
-            return CustomerData.CustomerDatas[this.CustomerID];
+            return (T)Convert.ChangeType(CustomerData.CustomerDatas[this.CustomerID], typeof(T));
         }
     }
 }

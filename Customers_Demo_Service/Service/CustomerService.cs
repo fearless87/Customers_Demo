@@ -7,11 +7,11 @@ using System.Threading.Tasks;
 
 namespace Customers_Demo_Service.Service
 {
-    public class CustomerService : ICustomerService
+    public class CustomerService : BaseService, ICustomerService
     {
         public Task<decimal> UpdateScore(Customer customer)
         {
-            var updatedScore = customer.UpdateScore();
+            var updatedScore = customer.Update<decimal>();
             return Task.FromResult(updatedScore);
         }
 
