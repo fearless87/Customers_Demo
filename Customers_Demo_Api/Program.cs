@@ -1,5 +1,7 @@
 ﻿using Customers_Demo_Api.HostedService;
+using Customers_Demo_Api.Middleware;
 using Customers_Demo_Service.Service;
+using System.Text.Json;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -9,6 +11,10 @@ builder.Services.AddControllers();
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
+builder.Services.AddMvc().AddJsonOptions(options =>
+{
+    options.JsonSerializerOptions.PropertyNamingPolicy = null;
+});
 
 // register custom service
 builder.Services.AddSingleton<ICustomerService, CustomerService>();
@@ -26,6 +32,9 @@ if (app.Environment.IsDevelopment())
 }
 
 app.UseHttpsRedirection();
+
+// use exception interceptor
+app.UseMiddleware<ExceptionMiddleware>(app);
 
 app.UseAuthorization();
 

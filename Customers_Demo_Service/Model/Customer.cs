@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
 using System.Text;
+using System.Text.Json.Serialization;
 using System.Threading.Tasks;
 
 namespace Customers_Demo_Service.Model
@@ -13,7 +14,7 @@ namespace Customers_Demo_Service.Model
     /// </summary>
     public class Customer : BaseModel
     {
-        [DisplayName("Customer ID")]
+        [JsonPropertyName("Customer ID")]
         public long CustomerID { get; set; }
         public decimal Score { get; set; } = 0;
 
