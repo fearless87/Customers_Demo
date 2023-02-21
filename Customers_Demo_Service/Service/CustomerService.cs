@@ -51,6 +51,10 @@ namespace Customers_Demo_Service.Service
 
         public async Task<List<Leaderboard>> GetLeaderboardsByRank(int start, int end)
         {
+            if (start < 1)
+            {
+                start = 1;
+            }
             List<Leaderboard> result = new List<Leaderboard>();
             var leaderboardArr = CustomerData.Leaderboards.ToArray();
             while (start <= end && start <= leaderboardArr.Length)
@@ -64,7 +68,14 @@ namespace Customers_Demo_Service.Service
         public async Task<List<Leaderboard>> GetLeaderboardsByCustomerId(long customerid, int high, int low)
         {
             var leaderboardArr = CustomerData.Leaderboards.ToArray();
-            int customerIndex = BinarySearch(leaderboardArr, customerid);
+            int customerIndex = -1;
+            for (var i = 0; i < leaderboardArr.Length; i++)
+            {
+                if (leaderboardArr[i].CustomerID == customerid)
+                {
+                    customerIndex = i;
+                }
+            }
             if (customerIndex >= 0)
             {
                 var curRand = leaderboardArr[customerIndex].Rank;
@@ -74,27 +85,6 @@ namespace Customers_Demo_Service.Service
             {
                 return new List<Leaderboard>();
             }
-        }
-        private int BinarySearch(Leaderboard[] leaderboardArr, long customerid)
-        {
-            int low = 0, high = leaderboardArr.Length - 1;
-            while (low <= high)
-            {
-                int mid = (low + high) / 2;
-                if (customerid == leaderboardArr[mid].CustomerID)
-                {
-                    return mid;
-                }
-                else if (customerid > leaderboardArr[mid].CustomerID)
-                {
-                    low = mid + 1;
-                }
-                else
-                {
-                    high = mid - 1;
-                }
-            }
-            return -1;
         }
 
     }

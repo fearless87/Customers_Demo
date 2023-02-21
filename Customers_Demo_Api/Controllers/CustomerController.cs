@@ -24,18 +24,18 @@ namespace Customers_Demo_Api.Controllers
 
         [Route("/leaderboard")]
         [HttpGet]
-        public async Task<object> GetLeaderboardsByRank([Required] int start, [Required] int end)
+        public async Task<List<Leaderboard>> GetLeaderboardsByRank([Required] int start, [Required] int end)
         {
-            return JsonSerializer.Serialize(await _customerService.GetLeaderboardsByRank(start, end));
+            return await _customerService.GetLeaderboardsByRank(start, end);
         }
 
         [Route("/leaderboard/{customerid}")]
         [HttpGet]
-        public async Task<object> GetLeaderboardsByRank(long customerid, [Required] int high = 0, [Required] int low = 0)
+        public async Task<List<Leaderboard>> GetLeaderboardsByRank(long customerid, [Required] int high = 0, [Required] int low = 0)
         {
             if (high < 0) { high = 0; }
             if (low < 0) { low = 0; }
-            return JsonSerializer.Serialize(await _customerService.GetLeaderboardsByCustomerId(customerid, high, low));
+            return await _customerService.GetLeaderboardsByCustomerId(customerid, high, low);
         }
     }
 }
