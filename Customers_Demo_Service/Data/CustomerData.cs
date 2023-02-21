@@ -13,6 +13,6 @@ namespace Customers_Demo_Service.Data
     {
         public static ConcurrentDictionary<long, decimal> CustomerDatas { get; set; } = new ConcurrentDictionary<long, decimal>();
         public static ConcurrentQueue<Customer> CustomerQueue = new ConcurrentQueue<Customer>();
-        public static ConcurrentBag<Leaderboard> Leaderboards { get; set; } = new ConcurrentBag<Leaderboard>();
+        public static List<Leaderboard> Leaderboards { get; set; } = new List<Leaderboard>();
     }
 }

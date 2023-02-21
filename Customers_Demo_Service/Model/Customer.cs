@@ -28,7 +28,7 @@ namespace Customers_Demo_Service.Model
                 CustomerData.CustomerDatas.TryAdd(this.CustomerID, this.Score);
             }
             // enqueue
-            CustomerData.CustomerQueue.Append(this);
+            CustomerData.CustomerQueue.Enqueue(this);
 
             return (T)Convert.ChangeType(CustomerData.CustomerDatas[this.CustomerID], typeof(T));
         }

@@ -11,6 +11,6 @@ namespace Customers_Demo_Service.Model
     /// </summary>
     public class Leaderboard : Customer
     {
-        public long Rank { get; set; }
+        public int Rank { get; set; }
     }
 }

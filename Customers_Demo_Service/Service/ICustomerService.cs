@@ -10,5 +10,10 @@ namespace Customers_Demo_Service.Service
     public interface ICustomerService
     {
         Task<Decimal> UpdateScore(Customer customer);
+
+        Task AddLeaderboards();
+
+        Task<List<Leaderboard>> GetLeaderboardsByRank(int start, int end);
+        Task<List<Leaderboard>> GetLeaderboardsByCustomerId(long customerid, int high, int low);
     }
 }
