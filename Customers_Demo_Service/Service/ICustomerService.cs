@@ -10,7 +10,7 @@ namespace Customers_Demo_Service.Service
 {
     public interface ICustomerService
     {
-        Task<Decimal> UpsertScoreAsync(Customer customer);
+        ValueTask<Decimal> UpsertScoreAsync(Customer customer);
 
         void AddLeaderboards();
 

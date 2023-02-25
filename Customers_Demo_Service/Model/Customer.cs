@@ -33,5 +33,16 @@ namespace Customers_Demo_Service.Model
 
             return (T)Convert.ChangeType(CustomerData.CustomerDatas[this.CustomerID], typeof(T));
         }
+
+        public override bool Equals(object? obj)
+        {
+            if (obj is not Customer customer) return false;
+            return customer.CustomerID == CustomerID;
+        }
+
+        public override int GetHashCode()
+        {
+            return CustomerID.GetHashCode();
+        }
     }
 }

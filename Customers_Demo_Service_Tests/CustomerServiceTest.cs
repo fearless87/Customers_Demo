@@ -7,16 +7,22 @@ using System.Threading.Tasks;
 using Customers_Demo_Service.Model;
 using System.Diagnostics;
 using static System.Formats.Asn1.AsnWriter;
+using Xunit.Abstractions;
+using Microsoft.VisualStudio.TestPlatform.Utilities;
 
 namespace Customers_Demo_Service_Tests
 {
     public class CustomerServiceTest
     {
         private readonly ICustomerService _customerService;
+        private readonly ICustomerService _customerServiceObsolete;
+        protected readonly ITestOutputHelper _output;
 
-        public CustomerServiceTest()
+        public CustomerServiceTest(ITestOutputHelper output)
         {
             _customerService = new CustomerService();
+            _customerServiceObsolete = new CustomerServiceObsolete();
+            _output = output;
         }
 
         [Fact]
@@ -111,5 +117,78 @@ namespace Customers_Demo_Service_Tests
             var allCustomers = await _customerService.AllCustomersAsync();
             Assert.Equal(leaderboardsNum, allLeaderboards.Count);
         }
+
+        [Fact]
+        public async void Valid_RetrivedTime()
+        {
+            _customerService.ClearData();
+            Stopwatch stopwatch = new Stopwatch();
+            stopwatch.Start();
+
+            #region 构建Customer
+            int[] scoreArr = new int[100];
+            for (var i = 0; i < 100; i++)
+            {
+                scoreArr[i] = new Random().Next(-2000, 2000);
+            }
+            // 构建1万个Customer
+            for (var i = 0; i < 10000; i++)
+            {
+                // 每个Customer随机Update 10次积分
+                for (var j = 0; j < 10; j++)
+                {
+                    await _customerService.UpsertScoreAsync(new Customer { CustomerID = i + 1, Score = scoreArr[new Random().Next(0, 99)] });
+                }
+            }
+            _customerService.AddLeaderboards();
+            #endregion
+            #region 随机获取100个Customer，且up、down均等于10
+            for (var i = 0; i < 100; i++)
+            {
+                await _customerService.GetLeaderboardsByCustomerIdAsync(new Random().Next(1, 10000), 10, 10);
+            }
+            #endregion
+
+            stopwatch.Stop();
+            _output.WriteLine((stopwatch.ElapsedMilliseconds / 1000).ToString());
+            Assert.True(true);
+        }
+
+        [Fact]
+        public async void Valid_RetrivedTime_Obsolete()
+        {
+            _customerServiceObsolete.ClearData();
+            Stopwatch stopwatch = new Stopwatch();
+            stopwatch.Start();
+
+            #region 构建Customer
+            int[] scoreArr = new int[100];
+            for (var i = 0; i < 100; i++)
+            {
+                scoreArr[i] = new Random().Next(-2000, 2000);
+            }
+            // 构建1万个Customer
+            for (var i = 0; i < 10000; i++)
+            {
+                // 每个Customer随机Update 10次积分
+                for (var j = 0; j < 10; j++)
+                {
+                    await _customerServiceObsolete.UpsertScoreAsync(new Customer { CustomerID = i + 1, Score = scoreArr[new Random().Next(0, 99)] });
+                }
+            }
+            _customerServiceObsolete.AddLeaderboards();
+            #endregion
+            #region 随机获取100个Customer，且up、down均等于10
+            for (var i = 0; i < 100; i++)
+            {
+                await _customerServiceObsolete.GetLeaderboardsByCustomerIdAsync(new Random().Next(1, 10000), 10, 10);
+            }
+            #endregion
+
+            stopwatch.Stop();
+            _output.WriteLine((stopwatch.ElapsedMilliseconds / 1000).ToString());
+            Assert.True(true);
+        }
+
     }
 }

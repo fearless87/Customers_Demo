@@ -1,17 +1,13 @@
 ﻿using Customers_Demo_Service.Data;
+using Customers_Demo_Service.Extension;
 using Customers_Demo_Service.Model;
-using System;
 using System.Collections.Concurrent;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace Customers_Demo_Service.Service
 {
     public class CustomerService : BaseService, ICustomerService
     {
-        public async Task<decimal> UpsertScoreAsync(Customer customer)
+        public async ValueTask<decimal> UpsertScoreAsync(Customer customer)
         {
             var updatedScore = customer.Update<decimal>();
             return await Task.FromResult(updatedScore);
@@ -29,73 +25,51 @@ namespace Customers_Demo_Service.Service
         {
             decimal curItemScore;
             CustomerData.CustomerDatas.TryGetValue(customer.CustomerID, out curItemScore);
-            var curItem = CustomerData.Leaderboards.FirstOrDefault(predicate => predicate.CustomerID == customer.CustomerID);
-            if (curItem != default)
+
+            var curCustomerItem = CustomerData.SortedCustomers.SingleOrDefault(predicate => predicate.CustomerID == customer.CustomerID);
+            if (curCustomerItem != null && CustomerData.SortedCustomers.Contains(curCustomerItem))
             {
                 if (curItemScore < 1)
                 {
-                    CustomerData.Leaderboards.Remove(curItem);
+                    CustomerData.SortedCustomers.Remove(curCustomerItem);
                 }
                 else
                 {
-                    curItem.Score = curItemScore;
+                    curCustomerItem.Score = curItemScore;
                 }
             }
             else
             {
-                if (curItemScore > 0)
-                {
-                    CustomerData.Leaderboards.Add(new Leaderboard
-                    {
-                        CustomerID = customer.CustomerID,
-                        Score = curItemScore,
-                        Rank = 0
-                    });
-                }
-            }
-            CustomerData.Leaderboards.Sort((x, y) => { return x.Score - y.Score > 0 ? -1 : (x.Score - y.Score == 0 ? (x.CustomerID - y.CustomerID > 0 ? 1 : (x.CustomerID - y.CustomerID == 0 ? 0 : -1)) : 1); });
-            for (var i = 0; i < CustomerData.Leaderboards.Count; i++)
-            {
-                CustomerData.Leaderboards[i].Rank = i + 1;
+                CustomerData.SortedCustomers.Add(new Customer { CustomerID = customer.CustomerID, Score = curItemScore });
             }
         }
 
         public async Task<List<Leaderboard>> GetLeaderboardsByRankAsync(int start, int end)
         {
-            if (start < 1)
-            {
-                start = 1;
-            }
+            var customers = CustomerData.SortedCustomers.Skip(start - 1).Take(end);
             List<Leaderboard> result = new List<Leaderboard>();
-            var leaderboardArr = CustomerData.Leaderboards.ToArray();
-            while (start <= end && start <= leaderboardArr.Length)
+            for (var i = 0; i < customers.Count(); i++)
             {
-                result.Add(leaderboardArr[start - 1]);
-                start++;
+                var item = customers.ElementAt(i);
+                result.Add(new Leaderboard
+                {
+                    CustomerID = item.CustomerID,
+                    Score = item.Score,
+                    Rank = i + 1
+                });
             }
+
             return result;
         }
 
         public async Task<List<Leaderboard>> GetLeaderboardsByCustomerIdAsync(long customerid, int high, int low)
         {
-            var leaderboardArr = CustomerData.Leaderboards.ToArray();
-            int customerIndex = -1;
-            for (var i = 0; i < leaderboardArr.Length; i++)
-            {
-                if (leaderboardArr[i].CustomerID == customerid)
-                {
-                    customerIndex = i;
-                }
-            }
-            if (customerIndex >= 0)
-            {
-                var curRand = leaderboardArr[customerIndex].Rank;
-                return await GetLeaderboardsByRankAsync(curRand - high, curRand + low);
-            }
-            else
+            var curIndex = CustomerData.SortedCustomers.ToList().FindIndex(predicate => predicate.CustomerID == customerid);
+            if (curIndex == -1)
             {
                 return new List<Leaderboard>();
             }
+            return await GetLeaderboardsByRankAsync(curIndex + 1 - high, curIndex + 1 + low);
         }
 
         public async Task<ConcurrentDictionary<long, decimal>> AllCustomersAsync()
@@ -106,7 +80,7 @@ namespace Customers_Demo_Service.Service
         public void ClearData()
         {
             CustomerData.CustomerDatas = new ConcurrentDictionary<long, decimal>();
-            CustomerData.Leaderboards = new List<Leaderboard>();
+            CustomerData.SortedCustomers = new SortedSet<Customer>(new CompareCustomer());
             CustomerData.CustomerQueue.Clear();
         }
 
