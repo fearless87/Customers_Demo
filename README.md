@@ -5,13 +5,13 @@
 20000个customer，20000 * 10次upsert customer，100次随机by customerID的获取
 
 ### 测试场景
+**当前API采用的“场景2”**
 - 场景1：排序结果采用List，且写法不太干净
 - 场景2：排序结果采用SortedSet
 - 场景3：排序结果采用SortedSet，且基于某个Score得分值划分为两个集合（Part1、Part2）
 
 ![image](https://user-images.githubusercontent.com/8747775/221426809-f973be64-292f-41e2-987e-cfc3ae4a1c3d.png)
 
-**当前API采用的“场景2”**
 
 ### 测试记录（5轮测试的平均值）
 |  场景1   | 场景2  | 场景3  |
