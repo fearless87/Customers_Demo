@@ -27,7 +27,7 @@ namespace Customers_Demo_Service.Service
             CustomerData.CustomerDatas.TryGetValue(customer.CustomerID, out curItemScore);
 
             var curCustomerItem = CustomerData.SortedCustomers.SingleOrDefault(predicate => predicate.CustomerID == customer.CustomerID);
-            if (curCustomerItem != null && CustomerData.SortedCustomers.Contains(curCustomerItem))
+            if (curCustomerItem != null)
             {
                 if (curItemScore < 1)
                 {
