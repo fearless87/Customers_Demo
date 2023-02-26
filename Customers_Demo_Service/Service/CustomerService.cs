@@ -46,7 +46,7 @@ namespace Customers_Demo_Service.Service
 
         public async Task<List<Leaderboard>> GetLeaderboardsByRankAsync(int start, int end)
         {
-            var customers = CustomerData.SortedCustomers.Skip(start - 1).Take(end);
+            var customers = CustomerData.SortedCustomers.Skip(start - 1).Take(end - start + 1);
             List<Leaderboard> result = new List<Leaderboard>();
             for (var i = 0; i < customers.Count(); i++)
             {
