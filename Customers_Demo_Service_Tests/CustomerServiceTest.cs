@@ -14,17 +14,23 @@ namespace Customers_Demo_Service_Tests
 {
     public class CustomerServiceTest
     {
-        private readonly ICustomerService _customerService;
         private readonly ICustomerService _customerServiceObsolete;
+        private readonly ICustomerService _customerServiceList;
+        private readonly ICustomerService _customerService;
         private readonly ICustomerService _customerServicePart;
         protected readonly ITestOutputHelper _output;
 
+        private int _customerCount;
+
         public CustomerServiceTest(ITestOutputHelper output)
         {
-            _customerService = new CustomerService();
             _customerServiceObsolete = new CustomerServiceObsolete();
+            _customerServiceList = new CustomerServiceList();
+            _customerService = new CustomerService();
             _customerServicePart = new CustomerServicePart();
             _output = output;
+
+            _customerCount = 20000;
         }
 
         [Fact]
@@ -123,7 +129,6 @@ namespace Customers_Demo_Service_Tests
         [Fact]
         public async void Valid_RetrivedTime_Obsolete()
         {
-            var customerCount = 20000;
             _customerServiceObsolete.ClearData();
             Stopwatch stopwatch = new Stopwatch();
             stopwatch.Start();
@@ -135,7 +140,7 @@ namespace Customers_Demo_Service_Tests
                 scoreArr[i] = new Random().Next(-2000, 2000);
             }
             // 构建1万个Customer
-            for (var i = 0; i < customerCount; i++)
+            for (var i = 0; i < _customerCount; i++)
             {
                 // 每个Customer随机Update 10次积分
                 for (var j = 0; j < 10; j++)
@@ -148,7 +153,43 @@ namespace Customers_Demo_Service_Tests
             #region 随机获取100个Customer，且up、down均等于10
             for (var i = 0; i < 100; i++)
             {
-                await _customerServiceObsolete.GetLeaderboardsByCustomerIdAsync(new Random().Next(1, customerCount), 10, 10);
+                await _customerServiceObsolete.GetLeaderboardsByCustomerIdAsync(new Random().Next(1, _customerCount), 10, 10);
+            }
+            #endregion
+
+            stopwatch.Stop();
+            _output.WriteLine((stopwatch.ElapsedMilliseconds / 1000).ToString());
+            Assert.True(true);
+        }
+
+        [Fact]
+        public async void Valid_RetrivedTime_List()
+        {
+            _customerServiceList.ClearData();
+            Stopwatch stopwatch = new Stopwatch();
+            stopwatch.Start();
+
+            #region 构建Customer
+            int[] scoreArr = new int[100];
+            for (var i = 0; i < 100; i++)
+            {
+                scoreArr[i] = new Random().Next(-2000, 2000);
+            }
+            // 构建1万个Customer
+            for (var i = 0; i < _customerCount; i++)
+            {
+                // 每个Customer随机Update 10次积分
+                for (var j = 0; j < 10; j++)
+                {
+                    await _customerServiceList.UpsertScoreAsync(new Customer { CustomerID = i + 1, Score = scoreArr[new Random().Next(0, 99)] });
+                }
+            }
+            _customerServiceList.AddLeaderboards();
+            #endregion
+            #region 随机获取100个Customer，且up、down均等于10
+            for (var i = 0; i < 100; i++)
+            {
+                await _customerServiceList.GetLeaderboardsByCustomerIdAsync(new Random().Next(1, _customerCount), 10, 10);
             }
             #endregion
 
@@ -160,7 +201,6 @@ namespace Customers_Demo_Service_Tests
         [Fact]
         public async void Valid_RetrivedTime()
         {
-            var customerCount = 20000;
             _customerService.ClearData();
             Stopwatch stopwatch = new Stopwatch();
             stopwatch.Start();
@@ -172,7 +212,7 @@ namespace Customers_Demo_Service_Tests
                 scoreArr[i] = new Random().Next(-2000, 2000);
             }
             // 构建1万个Customer
-            for (var i = 0; i < customerCount; i++)
+            for (var i = 0; i < _customerCount; i++)
             {
                 // 每个Customer随机Update 10次积分
                 for (var j = 0; j < 10; j++)
@@ -185,7 +225,7 @@ namespace Customers_Demo_Service_Tests
             #region 随机获取100个Customer，且up、down均等于10
             for (var i = 0; i < 100; i++)
             {
-                await _customerService.GetLeaderboardsByCustomerIdAsync(new Random().Next(1, customerCount), 10, 10);
+                await _customerService.GetLeaderboardsByCustomerIdAsync(new Random().Next(1, _customerCount), 10, 10);
             }
             #endregion
 
@@ -197,7 +237,6 @@ namespace Customers_Demo_Service_Tests
         [Fact]
         public async void Valid_RetrivedTime_Part()
         {
-            var customerCount = 20000;
             _customerServicePart.ClearData();
             Stopwatch stopwatch = new Stopwatch();
             stopwatch.Start();
@@ -209,7 +248,7 @@ namespace Customers_Demo_Service_Tests
                 scoreArr[i] = new Random().Next(-2000, 2000);
             }
             // 构建1万个Customer
-            for (var i = 0; i < customerCount; i++)
+            for (var i = 0; i < _customerCount; i++)
             {
                 // 每个Customer随机Update 10次积分
                 for (var j = 0; j < 10; j++)
@@ -222,7 +261,7 @@ namespace Customers_Demo_Service_Tests
             #region 随机获取100个Customer，且up、down均等于10
             for (var i = 0; i < 100; i++)
             {
-                await _customerServicePart.GetLeaderboardsByCustomerIdAsync(new Random().Next(1, customerCount), 10, 10);
+                await _customerServicePart.GetLeaderboardsByCustomerIdAsync(new Random().Next(1, _customerCount), 10, 10);
             }
             #endregion
 

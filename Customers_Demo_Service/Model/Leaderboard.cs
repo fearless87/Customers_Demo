@@ -13,6 +13,6 @@ namespace Customers_Demo_Service.Model
     public class Leaderboard : Customer
     {
         [JsonPropertyOrder(100)]
-        public int Rank { get; set; }
+        public int Rank { get; set; } = 0;
     }
 }

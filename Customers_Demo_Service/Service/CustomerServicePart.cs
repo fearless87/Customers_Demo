@@ -88,7 +88,7 @@ namespace Customers_Demo_Service.Service
                 {
                     CustomerID = item.CustomerID,
                     Score = item.Score,
-                    Rank = i + 1
+                    Rank = start + i
                 });
             }
 

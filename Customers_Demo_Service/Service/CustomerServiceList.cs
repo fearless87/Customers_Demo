@@ -6,9 +6,9 @@ using System.Collections.Concurrent;
 namespace Customers_Demo_Service.Service
 {
     /// <summary>
-    /// 废弃的（初始低性能版本）
+    /// 采用List，写法干净
     /// </summary>
-    public class CustomerServiceObsolete : BaseService, ICustomerService
+    public class CustomerServiceList : BaseService, ICustomerService
     {
         public async ValueTask<decimal> UpsertScoreAsync(Customer customer)
         {
@@ -47,51 +47,65 @@ namespace Customers_Demo_Service.Service
                     CustomerData.Leaderboards.Add(new Leaderboard
                     {
                         CustomerID = customer.CustomerID,
-                        Score = curItemScore,
-                        Rank = 0
+                        Score = curItemScore
                     });
                 }
             }
             CustomerData.Leaderboards.Sort((x, y) => { return x.Score - y.Score > 0 ? -1 : (x.Score - y.Score == 0 ? (x.CustomerID - y.CustomerID > 0 ? 1 : (x.CustomerID - y.CustomerID == 0 ? 0 : -1)) : 1); });
-            for (var i = 0; i < CustomerData.Leaderboards.Count; i++)
-            {
-                CustomerData.Leaderboards[i].Rank = i + 1;
-            }
         }
 
         public async Task<List<Leaderboard>> GetLeaderboardsByRankAsync(int start, int end)
         {
             List<Leaderboard> result = new List<Leaderboard>();
-            var leaderboardArr = CustomerData.Leaderboards.ToArray();
-            while (start <= end && start <= leaderboardArr.Length)
+            var customers = CustomerData.Leaderboards.Skip(start - 1).Take(end - start + 1);
+            for (var i = 0; i < customers.Count(); i++)
             {
-                result.Add(leaderboardArr[start - 1]);
-                start++;
+                customers.ElementAt(i).Rank = start + i;
             }
+
             return result;
         }
 
         public async Task<List<Leaderboard>> GetLeaderboardsByCustomerIdAsync(long customerid, int high, int low)
         {
-            var leaderboardArr = CustomerData.Leaderboards.ToArray();
-            int customerIndex = -1;
-            for (var i = 0; i < leaderboardArr.Length; i++)
-            {
-                if (leaderboardArr[i].CustomerID == customerid)
-                {
-                    customerIndex = i;
-                }
-            }
-            if (customerIndex >= 0)
-            {
-                var curRand = leaderboardArr[customerIndex].Rank;
-                return await GetLeaderboardsByRankAsync(curRand - high, curRand + low);
-            }
-            else
+            int curIndex = BinarySearch(customerid);
+            if (curIndex == -1)
             {
                 return new List<Leaderboard>();
             }
+            return await GetLeaderboardsByRankAsync(curIndex + 1 - high, curIndex + 1 + low);
         }
+        private int BinarySearch(long customerid)
+        {
+            int low = 0, high = CustomerData.Leaderboards.Count - 1;
+            // 长度为2时特殊处理
+            if (high == 2)
+            {
+                return CustomerData.Leaderboards.FindIndex(match => match.CustomerID == customerid);
+            }
+
+            while (low <= high)
+            {
+                int mid = (low + high) / 2;
+                long? curCustomerId = CustomerData.Leaderboards.GetRange(mid, 1).FirstOrDefault()?.CustomerID;
+                if (customerid == curCustomerId)
+                {
+                    return mid;
+                }
+                else if (customerid > curCustomerId)
+                {
+                    low = mid + 1;
+                }
+                else
+                {
+                    high = mid - 1;
+                }
+            }
+            return -1;
+        }
+
+
+
 
         public async Task<ConcurrentDictionary<long, decimal>> AllCustomersAsync()
         {

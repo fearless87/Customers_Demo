@@ -26,6 +26,10 @@ namespace Customers_Demo_Api.Controllers
         [HttpGet]
         public async Task<List<Leaderboard>> GetLeaderboardsByRankAsync([Required] int start, [Required] int end)
         {
+            if (start < 1)
+            {
+                start = 1;
+            }
             return await _customerService.GetLeaderboardsByRankAsync(start, end);
         }
 
